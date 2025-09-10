@@ -1,38 +1,24 @@
 package edu.eam.ingesoft.logica.credito;
 
-/**
- * Clase que representa una evaluación de crédito para la entidad financiera FinAurora.
- * Permite calcular cuotas mensuales y evaluar la aprobación de créditos según reglas de negocio.
- */
-public class EvaluacionCredito {
-    
-    private String nombreSolicitante;
-    private double ingresosMensuales;
-    private int numeroCreditosActivos;
-    private int puntajeCredito;
-    private double valorCreditoSolicitado;
-    private boolean tieneCodedor;
-    
-    /**
-     * Constructor de la clase EvaluacionCredito.
-     * 
-     * @param nombreSolicitante Nombre completo del solicitante del crédito
-     * @param ingresosMensuales Ingresos mensuales del solicitante en pesos
-     * @param numeroCreditosActivos Cantidad de créditos activos que tiene el solicitante
-     * @param puntajeCredito Puntaje crediticio del solicitante (0-1000)
-     * @param valorCreditoSolicitado Monto del crédito solicitado en pesos
-     * @param tieneCodedor Indica si el solicitante cuenta con un codeudor
-     */
-    public EvaluacionCredito(String nombreSolicitante, double ingresosMensuales, 
-                            int numeroCreditosActivos, int puntajeCredito, 
-                            double valorCreditoSolicitado, boolean tieneCodedor) {
-        this.nombreSolicitante = nombreSolicitante;
-        this.ingresosMensuales = ingresosMensuales;
-        this.numeroCreditosActivos = numeroCreditosActivos;
-        this.puntajeCredito = puntajeCredito;
-        this.valorCreditoSolicitado = valorCreditoSolicitado;
-        this.tieneCodedor = tieneCodedor;
-    }
+
+    public class EvaluacionCredito {
+        private String nombreSolicitante;
+        private double ingresosMensuales;
+        private int numeroCreditosActivos;
+        private int puntajeCredito;
+        private double valorCreditoSolicitado;
+        private boolean tieneCodedor;
+
+        public EvaluacionCredito(String nombreSolicitante, double ingresosMensuales,
+                                 int numeroCreditosActivos, int puntajeCredito,
+                                 double valorCreditoSolicitado, boolean tieneCodedor) {
+            this.nombreSolicitante = nombreSolicitante;
+            this.ingresosMensuales = ingresosMensuales;
+            this.numeroCreditosActivos = numeroCreditosActivos;
+            this.puntajeCredito = puntajeCredito;
+            this.valorCreditoSolicitado = valorCreditoSolicitado;
+            this.tieneCodedor = tieneCodedor;
+        }
     
     /**
      * Calcula la tasa de interés mensual a partir de la tasa nominal anual.
@@ -41,7 +27,7 @@ public class EvaluacionCredito {
      * @return Tasa mensual en porcentaje
      */
     public double calcularTasaMensual(double tasaNominalAnual) {
-        return 0;
+        return (tasaNominalAnual / 12.0);
     }
     
     /**
@@ -53,7 +39,15 @@ public class EvaluacionCredito {
      * @return Valor de la cuota mensual en pesos
      */
     public double calcularCuotaMensual(double tasaNominalAnual, int plazoMeses) {
-        return 0;
+        double tasaMensual = calcularTasaMensual(tasaNominalAnual) / 100.0;
+        double M = valorCreditoSolicitado;
+
+        if (tasaMensual == 0) {
+            return M / plazoMeses;
+        }
+
+        return (M * tasaMensual * Math.pow(1 + tasaMensual, plazoMeses)) /
+                (Math.pow(1 + tasaMensual, plazoMeses) - 1);
     }
     
     /**
@@ -67,15 +61,28 @@ public class EvaluacionCredito {
      * @return true si el crédito es aprobado, false si es rechazado
      */
     public boolean evaluarAprobacion(double tasaNominalAnual, int plazoMeses) {
+        if (puntajeCredito < 500) {
+            return false;
+        }
 
-        
+        double cuota = calcularCuotaMensual(tasaNominalAnual, plazoMeses);
+
+        if (puntajeCredito >= 500 && puntajeCredito <= 700) {
+            return tieneCodedor && (cuota <= ingresosMensuales * 0.25);
+        }
+        if (puntajeCredito > 700 && numeroCreditosActivos < 2) {
+            // Perfil alto: cuota <= 30% ingresos
+            return cuota <= ingresosMensuales * 0.30;
+        }
+
         return false;
     }
-    
-    /**
-     * Obtiene el nombre del solicitante.
-     * @return Nombre completo del solicitante
-     */
+
+
+        /**
+         * Obtiene el nombre del solicitante.
+         * @return Nombre completo del solicitante
+         */
     public String getNombreSolicitante() {
         return nombreSolicitante;
     }
